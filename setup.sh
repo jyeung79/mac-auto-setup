@@ -75,32 +75,6 @@ if ! command_exists vim; then
 fi
 
 #
-# Install dotfiles system
-#
-echo " ---------- dotfiles ---------"
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/skwp/dotfiles/master/install.sh)"
-cp $(
-  cd $(dirname ${BASH_SOURCE:-$0})
-  pwd
-)/settings/zsh/private.zsh ~/.yadr/zsh/private.zsh
-echo "typeset -U path PATH
-path=(
-  $(brew --prefix)/bin(N-/)
-  $(brew --prefix)/sbin(N-/)
-  /usr/bin
-  /usr/sbin
-  /bin
-  /sbin
-  /Library/Apple/usr/bin
-)
-" >>~/.yadr/zsh/private.zsh
-if [ -d /opt/homebrew/bin ]; then
-  echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >>~/.yadr/zsh/private.zsh
-fi
-source ~/.zshrc
-echo " ------------ END ------------"
-
-#
 # Powerline
 #
 echo " --------- Powerline ---------"
@@ -127,56 +101,6 @@ if ! command_exists asdf; then
 fi
 
 #
-# Install ruby
-#
-if [ ! -e "$(echo ~$USERNAME)/.asdf/shims/ruby" ]; then
-  echo " ----------- Ruby ------------"
-  # No longer bundle 3rd party sources
-  # https://www.ruby-lang.org/en/news/2022/12/25/ruby-3-2-0-released
-  brew install libyaml ruby-build
-  echo -e "export RUBY_CONFIGURE_OPTS=\"--with-openssl-dir=$(brew --prefix openssl@1.1)\"" >>~/.yadr/zsh/private.zsh
-  source ~/.zshrc
-
-  asdf plugin add ruby https://github.com/asdf-vm/asdf-ruby.git
-  ruby_latest=$(asdf list all ruby | grep -v '[a-z]' | tail -1 | sed 's/ //g')
-  asdf install ruby $ruby_latest
-  asdf global ruby $ruby_latest
-  asdf reshim ruby
-  ruby -v
-  where ruby
-  asdf which ruby
-
-  # https://github.com/asdf-vm/asdf-ruby#migrating-from-another-ruby-version-manager
-  echo "legacy_version_file = yes" >~/.asdfrc
-  echo " ------------ END ------------"
-fi
-
-#
-# Install Golang
-#
-if [ ! -e "$(echo ~$USERNAME)/.asdf/shims/go" ]; then
-  echo " ---------- Golang -----------"
-  asdf plugin add golang https://github.com/kennyp/asdf-golang
-  golang_latest=$(asdf list all golang | grep -v '[a-z]' | tail -1 | sed 's/ //g')
-  asdf install golang $golang_latest
-  asdf global golang $golang_latest
-  asdf reshim golang
-  go version
-  where go
-  asdf which go
-
-  go install golang.org/x/tools/gopls@latest
-  go install github.com/go-delve/delve/cmd/dlv@latest
-  go install github.com/cweill/gotests/...@latest
-  asdf reshim golang
-
-  # GOPATH -> https://github.com/kennyp/asdf-golang/blob/master/bin/exec-env
-  # echo -e 'export GOPATH=$(asdf where golang)/go' >>~/.yadr/zsh/private.zsh
-  # echo -e 'export PATH="$PATH:$GOPATH"' >>~/.yadr/zsh/private.zsh
-  echo " ------------ END ------------"
-fi
-
-#
 # gitmoji-cli
 #
 if ! command_exists gitmoji; then
@@ -192,6 +116,18 @@ if ! command_exists bat; then
   echo " --------- bat command ----------"
   brew install bat
   echo " ------------ END ------------"
+fi
+
+#
+# NVM, Node and Corepack
+#
+if ! command_exists nvm; then
+  echo " --------- nvm-sh -------------"
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+  source ~/.zshrc
+  nvm install node
+  npm install -g corepack
+  echo "-------------END --------------"
 fi
 
 read -p 'Do you want to enter your Git user name ? [y/n]' input

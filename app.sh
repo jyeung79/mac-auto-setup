@@ -37,3 +37,5 @@ brew install --cask todoist
 brew tap dimentium/autoraise
 brew install --cask autoraise
 brew services start autoraise
+brew tap oven-sh/bun 
+brew install bun
